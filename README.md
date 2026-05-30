@@ -583,8 +583,8 @@ The plugin schedules events in **Asia/Tehran** timezone. For better reliability,
 
 ## لایسنس
 
-این پروژه توسط Ashrafi توسعه یافته است.
+این پروژه توسط mr-noctis توسعه یافته است.
 
 ## License
 
-Developed by Ashrafi.
+Developed by mr-noctis.
