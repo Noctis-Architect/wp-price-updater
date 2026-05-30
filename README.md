@@ -5,7 +5,7 @@
 > A WordPress plugin that automatically updates WooCommerce product prices based on the USD exchange rate — with smart rounding, Telegram alerts, daily snapshots, and rollback.
 
 **نسخه / Version:** 3.0.0  
-**نویسنده / Author:** Ashrafi  
+**نویسنده / Author:** mr-noctis  
 **نیازمندی‌ها / Requires:** WordPress + WooCommerce + PHP (cURL)
 
 ---
