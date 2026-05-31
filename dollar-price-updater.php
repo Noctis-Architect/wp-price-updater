@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Dollar Price Updater PRO
+Plugin Name: Price Updater PRO
 Description: به‌روز‌رسانی هوشمند قیمت محصولات ووکامرس با سیستم رند کردن پیشرفته، اعلان‌های تلگرام، snapshot روزانه و قابلیت rollback
 Version: 3.0.0
-Author: Ashrafi
+Author: mr-noctis
 Text Domain: dollar-price-updater
 Domain Path: /languages
 */
