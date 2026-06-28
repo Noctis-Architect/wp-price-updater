@@ -18,7 +18,7 @@ class DPU_API {
         }
 
         $url = $opts['api_url'] . '?key=' . urlencode($opts['api_key']);
-        DPU_Logger::log('Fetching dollar price from: ' . $url);
+        DPU_Logger::log('Fetching dollar price from: ' . $opts['api_url']);
 
         $ch = curl_init();
         curl_setopt_array($ch, [

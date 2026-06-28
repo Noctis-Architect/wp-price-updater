@@ -6,7 +6,7 @@ class DPU_Options {
     public static function defaults(): array {
         return [
             // API
-            'api_key'        => 'BAGAXedRDwqcggWUHJnVsFGKG2uc9V2K',
+            'api_key'        => '',
             'api_url'        => 'https://brsapi.ir/Api/Market/Gold_Currency.php',
             'cache_ttl'      => 3600,
 
@@ -26,8 +26,8 @@ class DPU_Options {
             // تلگرام
             'telegram_mode'     => 'worker',   // 'direct' | 'worker'
             // حالت worker
-            'telegram_webhook'  => 'https://ashrafi.emroozisajjad68.workers.dev/',
-            'telegram_chat_id'  => '-1003104039436',
+            'telegram_webhook'  => '',
+            'telegram_chat_id'  => '',
             // حالت direct
             'telegram_bot_token'     => '',
             'telegram_direct_chat_id' => '',

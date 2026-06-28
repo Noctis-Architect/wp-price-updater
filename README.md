@@ -18,6 +18,8 @@
 - [Features](#features)
 - [نصب](#نصب)
 - [Installation](#installation)
+- [دانلود از Releases](#دانلود-از-releases)
+- [Download from Releases](#download-from-releases)
 - [شروع سریع](#شروع-سریع)
 - [Quick Start](#quick-start)
 - [منطق محاسبه قیمت](#منطق-محاسبه-قیمت)
@@ -106,11 +108,16 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 
 ### مراحل
 
-1. پوشه `price-updater` را در `wp-content/plugins/` کپی کنید.
-2. از **افزونه‌ها → افزونه‌های نصب‌شده** پلاگین **Dollar Price Updater PRO** را فعال کنید.
-3. به **WooCommerce → Dollar Updater** بروید.
-4. کلید API و تنظیمات تلگرام را وارد کنید.
-5. یک بار **اجرای دستی** بزنید تا متادیتای محصولات ساخته شود.
+1. از بخش **[Releases](https://github.com/Noctis-Architect/wp-price-updater/releases)** آخرین فایل `dollar-price-updater.zip` را دانلود کنید.
+2. در وردپرس بروید به **افزونه‌ها → افزودن → بارگذاری افزونه** و همان zip را آپلود کنید.
+3. پلاگین **Dollar Price Updater PRO** را فعال کنید.
+4. به **WooCommerce → Dollar Updater** بروید.
+5. کلید API و تنظیمات تلگرام را وارد کنید.
+6. یک بار **اجرای دستی** بزنید تا متادیتای محصولات ساخته شود.
+
+> **ساختار zip:** فایل Release بدون پوشهٔ اضافه است — مستقیماً `dollar-price-updater.php`، `admin/` و `includes/` داخل zip قرار دارند و برای نصب از پنل وردپرس آماده‌اند.
+
+> **نصب دستی:** اگر ترجیح می‌دهید، zip را در `wp-content/plugins/dollar-price-updater/` extract کنید (یک پوشه بسازید و محتوای zip را داخل آن بریزید).
 
 > **نکته:** اولین بار که پلاگین روی محصولات موجود اجرا می‌شود، فقط `_dpu_base_price` و `_dpu_upload_dollar` را ذخیره می‌کند و قیمت را تغییر نمی‌دهد. از اجرای بعدی به بعد، قیمت‌ها بر اساس تغییر دلار به‌روز می‌شوند.
 
@@ -127,13 +134,38 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 
 ### Steps
 
-1. Copy the `price-updater` folder into `wp-content/plugins/`.
-2. Activate **Dollar Price Updater PRO** under **Plugins → Installed Plugins**.
-3. Go to **WooCommerce → Dollar Updater**.
-4. Enter your API key and Telegram settings.
-5. Run a **manual update** once to initialize product metadata.
+1. Download the latest `dollar-price-updater.zip` from **[Releases](https://github.com/Noctis-Architect/wp-price-updater/releases)**.
+2. In WordPress go to **Plugins → Add New → Upload Plugin** and upload the zip file.
+3. Activate **Dollar Price Updater PRO**.
+4. Go to **WooCommerce → Dollar Updater**.
+5. Enter your API key and Telegram settings.
+6. Run a **manual update** once to initialize product metadata.
+
+> **Zip layout:** Release archives have no extra wrapper folder — `dollar-price-updater.php`, `admin/`, and `includes/` sit at the zip root and are ready for WordPress upload.
+
+> **Manual install:** Alternatively, create `wp-content/plugins/dollar-price-updater/` and extract the zip contents there.
 
 > **Note:** On the first run for existing products, the plugin only saves `_dpu_base_price` and `_dpu_upload_dollar` without changing prices. From the second run onward, prices update based on USD changes.
+
+---
+
+## دانلود از Releases
+
+هر نسخهٔ جدید با tag (مثلاً `v3.0.0`) منتشر می‌شود و GitHub Actions به‌صورت خودکار فایل zip نصب‌پذیر می‌سازد.
+
+1. به [Releases](https://github.com/Noctis-Architect/wp-price-updater/releases) بروید.
+2. آخرین نسخه را باز کنید.
+3. `dollar-price-updater.zip` را دانلود و از **افزونه‌ها → افزودن → بارگذاری افزونه** نصب کنید.
+
+---
+
+## Download from Releases
+
+Each new version is published with a tag (e.g. `v3.0.0`). GitHub Actions builds an installable zip automatically.
+
+1. Open [Releases](https://github.com/Noctis-Architect/wp-price-updater/releases).
+2. Pick the latest version.
+3. Download `dollar-price-updater.zip` and install it via **Plugins → Add New → Upload Plugin**.
 
 ---
 

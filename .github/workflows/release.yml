@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build WordPress installable zip
+        run: |
+          zip -r dollar-price-updater.zip . \
+            -x '.git/*' \
+            -x '.github/*' \
+            -x '*.zip'
+
+      - name: Verify flat plugin layout
+        run: |
+          unzip -l dollar-price-updater.zip
+          unzip -l dollar-price-updater.zip | grep -q 'dollar-price-updater.php'
+          unzip -l dollar-price-updater.zip | grep -q 'admin/'
+          unzip -l dollar-price-updater.zip | grep -q 'includes/'
+          ! unzip -l dollar-price-updater.zip | grep -qE '/dollar-price-updater/'
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dollar-price-updater.zip
+          generate_release_notes: true
