@@ -22,6 +22,12 @@ class DPU_Scheduler {
         self::clear_all();
 
         $opts  = DPU_Options::get();
+
+        if (empty($opts['enable_auto_update'])) {
+            DPU_Logger::log('Auto update disabled — cron not scheduled');
+            return;
+        }
+
         $times = array_map('trim', explode(',', $opts['update_times']));
         $tz    = new DateTimeZone('Asia/Tehran');
 
@@ -46,6 +52,10 @@ class DPU_Scheduler {
 
 // اجرای هوک کرون
 add_action(DPU_Scheduler::HOOK, function(string $scheduled_time) {
+    if (empty(DPU_Options::get()['enable_auto_update'])) {
+        DPU_Logger::log('Cron skipped — auto update disabled');
+        return;
+    }
     DPU_Logger::log("Cron triggered for: {$scheduled_time}");
     DPU_Updater::run('auto');
 }, 10, 1);

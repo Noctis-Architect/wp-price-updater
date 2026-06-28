@@ -78,6 +78,7 @@ class DPU_Admin {
             'ratio'                => floatval($_POST['dpu_ratio'] ?? 0.5),
             'manual_percent'       => floatval($_POST['dpu_manual_percent'] ?? 0),
             'limit_categories'     => sanitize_text_field($_POST['dpu_limit_categories'] ?? ''),
+            'enable_auto_update'   => !empty($_POST['dpu_enable_auto_update']) ? 1 : 0,
             'enable_log'           => isset($_POST['dpu_enable_log']) ? 1 : 0,
             'cache_ttl'            => intval($_POST['dpu_cache_ttl'] ?? 3600),
             // تلگرام
@@ -499,6 +500,11 @@ class DPU_Admin {
                             <div class="title">ساعت تهران</div>
                         </div>
                         <div class="dpu-status-item">
+                            <div class="title">🔄 اپدیت خودکار</div>
+                            <div class="value" style="font-size:14px;"><?php echo !empty($opts['enable_auto_update']) ? '✅ فعال' : '❌ غیرفعال'; ?></div>
+                            <div class="title"><?php echo !empty($opts['enable_auto_update']) ? 'کرون زمان‌بندی‌شده' : 'فقط اجرای دستی'; ?></div>
+                        </div>
+                        <div class="dpu-status-item">
                             <div class="title">📝 لاگ</div>
                             <div class="value" style="font-size:14px;"><?php echo $opts['enable_log'] ? '✅ فعال' : '❌ غیرفعال'; ?></div>
                             <div class="title"><?php echo WP_CONTENT_DIR . '/dpu-log.txt'; ?></div>
@@ -559,6 +565,16 @@ class DPU_Admin {
 
                     <div class="dpu-card">
                         <h2>⏰ زمان‌بندی</h2>
+                        <div class="form-row">
+                            <label>اپدیت خودکار</label>
+                            <div class="field-wrap">
+                                <label style="display:flex;align-items:center;gap:8px;font-weight:normal;padding-top:0">
+                                    <input type="checkbox" name="dpu_enable_auto_update" <?php checked(1, $opts['enable_auto_update'] ?? 1); ?> />
+                                    فعال کردن اپدیت خودکار (زمان‌بندی کرون)
+                                </label>
+                                <div class="desc">غیرفعال = کرون اجرا نمی‌شود؛ «اجرای فوری» و «تنظیم دستی قیمت» همچنان فعال‌اند.</div>
+                            </div>
+                        </div>
                         <div class="form-row">
                             <label>زمان‌های آپدیت</label>
                             <div class="field-wrap">
@@ -700,6 +716,7 @@ class DPU_Admin {
                     <input type="hidden" name="dpu_ratio" value="<?php echo esc_attr($opts['ratio']); ?>" />
                     <input type="hidden" name="dpu_manual_percent" value="<?php echo esc_attr($opts['manual_percent']); ?>" />
                     <input type="hidden" name="dpu_limit_categories" value="<?php echo esc_attr($opts['limit_categories']); ?>" />
+                    <input type="hidden" name="dpu_enable_auto_update" value="<?php echo esc_attr($opts['enable_auto_update'] ?? 1); ?>" />
                     <input type="hidden" name="dpu_enable_log" value="<?php echo esc_attr($opts['enable_log']); ?>" />
                     <input type="hidden" name="dpu_cache_ttl" value="<?php echo esc_attr($opts['cache_ttl']); ?>" />
                     <input type="hidden" name="dpu_round_to" value="<?php echo esc_attr($opts['round_to'] ?? 1000000); ?>" />
@@ -779,6 +796,7 @@ class DPU_Admin {
                     <input type="hidden" name="dpu_ratio" value="<?php echo esc_attr($opts['ratio']); ?>" />
                     <input type="hidden" name="dpu_manual_percent" value="<?php echo esc_attr($opts['manual_percent']); ?>" />
                     <input type="hidden" name="dpu_limit_categories" value="<?php echo esc_attr($opts['limit_categories']); ?>" />
+                    <input type="hidden" name="dpu_enable_auto_update" value="<?php echo esc_attr($opts['enable_auto_update'] ?? 1); ?>" />
                     <input type="hidden" name="dpu_enable_log" value="<?php echo esc_attr($opts['enable_log']); ?>" />
                     <input type="hidden" name="dpu_cache_ttl" value="<?php echo esc_attr($opts['cache_ttl']); ?>" />
                     <input type="hidden" name="dpu_round_to" value="<?php echo esc_attr($opts['round_to'] ?? 1000000); ?>" />

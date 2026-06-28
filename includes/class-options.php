@@ -11,6 +11,7 @@ class DPU_Options {
             'cache_ttl'      => 3600,
 
             // زمان‌بندی
+            'enable_auto_update' => 1,
             'update_times'   => '00:00',
 
             // محاسبه
