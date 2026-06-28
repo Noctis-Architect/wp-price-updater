@@ -12,6 +12,7 @@ class DPU_Options {
 
             // زمان‌بندی
             'enable_auto_update' => 1,
+            'enable_plugin_auto_update' => 0,
             'update_times'   => '00:00',
 
             // محاسبه

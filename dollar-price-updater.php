@@ -2,7 +2,7 @@
 /*
 Plugin Name: Price Updater PRO
 Description: به‌روز‌رسانی هوشمند قیمت محصولات ووکامرس با سیستم رند کردن پیشرفته، اعلان‌های تلگرام، snapshot روزانه و قابلیت rollback
-Version: 3.0.1
+Version: 3.0.2
 Author: mr-noctis
 Text Domain: dollar-price-updater
 Domain Path: /languages
@@ -10,9 +10,11 @@ Domain Path: /languages
 
 if (! defined('ABSPATH')) exit;
 
-define('DPU_VERSION',    '3.0.1');
-define('DPU_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('DPU_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('DPU_VERSION',        '3.0.2');
+define('DPU_PLUGIN_FILE',    __FILE__);
+define('DPU_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('DPU_PLUGIN_DIR',     plugin_dir_path(__FILE__));
+define('DPU_PLUGIN_URL',     plugin_dir_url(__FILE__));
 
 require_once DPU_PLUGIN_DIR . 'includes/class-options.php';
 require_once DPU_PLUGIN_DIR . 'includes/class-logger.php';
@@ -21,7 +23,10 @@ require_once DPU_PLUGIN_DIR . 'includes/class-telegram.php';
 require_once DPU_PLUGIN_DIR . 'includes/class-updater.php';
 require_once DPU_PLUGIN_DIR . 'includes/class-rollback.php';
 require_once DPU_PLUGIN_DIR . 'includes/class-scheduler.php';
+require_once DPU_PLUGIN_DIR . 'includes/class-updater-github.php';
 require_once DPU_PLUGIN_DIR . 'admin/class-admin.php';
+
+DPU_GitHub_Updater::init();
 
 // Debug: register shutdown handler to capture fatal errors that may cause HTTP 500
 register_shutdown_function(function() {

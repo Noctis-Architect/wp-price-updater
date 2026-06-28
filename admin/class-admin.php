@@ -9,6 +9,7 @@ class DPU_Admin {
         // AJAX endpoints for isolated processing (admin-ajax)
         add_action('wp_ajax_dpu_run_now', [self::class, 'ajax_run_now']);
         add_action('wp_ajax_dpu_adjust_prices', [self::class, 'ajax_adjust_prices']);
+        add_action('wp_ajax_dpu_check_update', [self::class, 'ajax_check_update']);
     }
 
     public static function register_menu(): void {
@@ -72,24 +73,25 @@ class DPU_Admin {
         }
 
         $new = [
-            'api_key'              => sanitize_text_field($_POST['dpu_api_key'] ?? ''),
-            'api_url'              => esc_url_raw($_POST['dpu_api_url'] ?? ''),
-            'update_times'         => sanitize_text_field($_POST['dpu_update_times'] ?? ''),
-            'ratio'                => floatval($_POST['dpu_ratio'] ?? 0.5),
-            'manual_percent'       => floatval($_POST['dpu_manual_percent'] ?? 0),
-            'limit_categories'     => sanitize_text_field($_POST['dpu_limit_categories'] ?? ''),
+            'api_key'              => sanitize_text_field($_POST['dpu_api_key'] ?? $opts['api_key'] ?? ''),
+            'api_url'              => esc_url_raw($_POST['dpu_api_url'] ?? $opts['api_url'] ?? ''),
+            'update_times'         => sanitize_text_field($_POST['dpu_update_times'] ?? $opts['update_times'] ?? ''),
+            'ratio'                => floatval($_POST['dpu_ratio'] ?? $opts['ratio'] ?? 0.5),
+            'manual_percent'       => floatval($_POST['dpu_manual_percent'] ?? $opts['manual_percent'] ?? 0),
+            'limit_categories'     => sanitize_text_field($_POST['dpu_limit_categories'] ?? $opts['limit_categories'] ?? ''),
             'enable_auto_update'   => !empty($_POST['dpu_enable_auto_update']) ? 1 : 0,
+            'enable_plugin_auto_update' => !empty($_POST['dpu_enable_plugin_auto_update']) ? 1 : 0,
             'enable_log'           => isset($_POST['dpu_enable_log']) ? 1 : 0,
-            'cache_ttl'            => intval($_POST['dpu_cache_ttl'] ?? 3600),
+            'cache_ttl'            => intval($_POST['dpu_cache_ttl'] ?? $opts['cache_ttl'] ?? 3600),
             // تلگرام
-            'telegram_mode'            => sanitize_text_field($_POST['telegram_mode'] ?? 'worker'),
-            'telegram_webhook'         => esc_url_raw($_POST['dpu_telegram_webhook'] ?? ''),
-            'telegram_chat_id'         => sanitize_text_field($_POST['dpu_telegram_chat_id'] ?? ''),
-            'telegram_bot_token'       => sanitize_text_field($_POST['dpu_telegram_bot_token'] ?? ''),
-            'telegram_direct_chat_id'  => sanitize_text_field($_POST['dpu_telegram_direct_chat_id'] ?? ''),
+            'telegram_mode'            => sanitize_text_field($_POST['telegram_mode'] ?? $opts['telegram_mode'] ?? 'worker'),
+            'telegram_webhook'         => esc_url_raw($_POST['dpu_telegram_webhook'] ?? $opts['telegram_webhook'] ?? ''),
+            'telegram_chat_id'         => sanitize_text_field($_POST['dpu_telegram_chat_id'] ?? $opts['telegram_chat_id'] ?? ''),
+            'telegram_bot_token'       => sanitize_text_field($_POST['dpu_telegram_bot_token'] ?? $opts['telegram_bot_token'] ?? ''),
+            'telegram_direct_chat_id'  => sanitize_text_field($_POST['dpu_telegram_direct_chat_id'] ?? $opts['telegram_direct_chat_id'] ?? ''),
             // رند
             'enable_rounding' => !empty($_POST['dpu_enable_rounding']) ? 1 : 0,
-            'round_to'        => intval($_POST['dpu_round_to'] ?? 1000000),
+            'round_to'        => intval($_POST['dpu_round_to'] ?? $opts['round_to'] ?? 1000000),
             'round_ranges'    => $round_ranges,
         ];
 
@@ -349,12 +351,54 @@ class DPU_Admin {
         ]);
     }
 
+    public static function ajax_check_update(): void {
+        if (!current_user_can('manage_woocommerce')) {
+            self::ensure_clean_output();
+            wp_send_json_error(['message' => 'دسترسی غیرمجاز']);
+        }
+
+        self::verify_ajax_nonce('dpu_check_update_nonce');
+
+        DPU_GitHub_Updater::clear_cache();
+        delete_site_transient('update_plugins');
+
+        $latest  = DPU_GitHub_Updater::get_latest(true);
+        $current = DPU_GitHub_Updater::current_version();
+
+        if (!$latest || empty($latest['version'])) {
+            self::ensure_clean_output();
+            wp_send_json_error(['message' => 'اتصال به GitHub Releases ناموفق بود. دوباره تلاش کنید.']);
+        }
+
+        $has_update = version_compare($latest['version'], $current, '>');
+
+        self::ensure_clean_output();
+        wp_send_json_success([
+            'current'     => $current,
+            'latest'      => $latest['version'],
+            'has_update'  => $has_update,
+            'release_url' => $latest['html_url'] ?? '',
+            'message'     => $has_update
+                ? "نسخه جدید {$latest['version']} موجود است (فعلی: {$current})"
+                : "پلاگین به‌روز است — نسخه {$current}",
+        ]);
+    }
+
     // ======================== HTML ========================
 
     private static function render_html(array $opts, array $notices): void {
         $dollar_now = DPU_API::get_dollar_price();
         $snapshots  = DPU_Logger::list_snapshots();
         $categories = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false]);
+
+        $current_version = DPU_GitHub_Updater::current_version();
+        $latest_info     = DPU_GitHub_Updater::get_latest();
+        $latest_version  = $latest_info['version'] ?? null;
+        $has_update      = $latest_version && version_compare($latest_version, $current_version, '>');
+        $update_url      = wp_nonce_url(
+            self_admin_url('update.php?action=upgrade-plugin&plugin=' . urlencode(DPU_PLUGIN_BASENAME)),
+            'upgrade-plugin_' . DPU_PLUGIN_BASENAME
+        );
         ?>
         <style>
         :root {
@@ -459,10 +503,48 @@ class DPU_Admin {
         .dpu-status-item { background: var(--dpu-bg); border-radius: 8px; padding: 14px 16px; border: 1px solid #e0e0e0; }
         .dpu-status-item .value { font-size: 22px; font-weight: 700; color: var(--dpu-blue); margin: 4px 0; }
         .dpu-status-item .title { font-size: 12px; color: #646970; }
+
+        /* بروزرسانی پلاگین */
+        .dpu-update-banner { padding: 14px 18px; border-radius: var(--dpu-radius); margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .dpu-update-banner.has-update { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+        .dpu-update-banner.up-to-date { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .dpu-update-banner.unknown { background: #f0f0f1; border: 1px solid var(--dpu-border); color: #50575e; }
+        .dpu-update-info { flex: 1; min-width: 200px; }
+        .dpu-update-info strong { display: block; margin-bottom: 4px; font-size: 15px; }
+        .dpu-update-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         </style>
 
         <div class="wrap dpu-wrap">
             <h1>💰 Dollar Price Updater PRO</h1>
+
+            <?php
+            $banner_class = $has_update ? 'has-update' : ($latest_version ? 'up-to-date' : 'unknown');
+            ?>
+            <div class="dpu-update-banner <?php echo esc_attr($banner_class); ?>" id="dpu-update-banner">
+                <div class="dpu-update-info">
+                    <?php if ($has_update): ?>
+                        <strong>🆕 نسخه جدید موجود است!</strong>
+                        نسخه فعلی: <code><?php echo esc_html($current_version); ?></code>
+                        — آخرین نسخه: <code><?php echo esc_html($latest_version); ?></code>
+                    <?php elseif ($latest_version): ?>
+                        <strong>✅ پلاگین به‌روز است</strong>
+                        نسخه فعلی: <code><?php echo esc_html($current_version); ?></code>
+                    <?php else: ?>
+                        <strong>ℹ️ وضعیت بروزرسانی</strong>
+                        نسخه فعلی: <code><?php echo esc_html($current_version); ?></code>
+                        — برای بررسی نسخه جدید، دکمه «بررسی بروزرسانی» را بزنید.
+                    <?php endif; ?>
+                </div>
+                <div class="dpu-update-actions">
+                    <?php if ($has_update): ?>
+                        <a href="<?php echo esc_url($update_url); ?>" class="dpu-btn dpu-btn-warning">⬆️ هم‌اکنون بروزرسانی کنید</a>
+                    <?php endif; ?>
+                    <form method="post" class="dpu-check-update-form" style="margin:0">
+                        <?php wp_nonce_field('dpu_check_update_nonce'); ?>
+                        <button type="submit" class="dpu-btn dpu-btn-secondary">🔄 بررسی بروزرسانی</button>
+                    </form>
+                </div>
+            </div>
 
             <?php foreach ($notices as $n): ?>
                 <div class="dpu-notice dpu-notice-<?php echo $n['type']; ?>"><?php echo $n['msg']; ?></div>
@@ -612,6 +694,16 @@ class DPU_Admin {
                                 </label>
                             </div>
                         </div>
+                        <div class="form-row">
+                            <label>بروزرسانی خودکار افزونه</label>
+                            <div class="field-wrap">
+                                <label style="display:flex;align-items:center;gap:8px;font-weight:normal;padding-top:0">
+                                    <input type="checkbox" name="dpu_enable_plugin_auto_update" <?php checked(1, $opts['enable_plugin_auto_update'] ?? 0); ?> />
+                                    نصب خودکار نسخه‌های جدید از GitHub Releases
+                                </label>
+                                <div class="desc">فعال = وردپرس هنگام انتشار نسخه جدید، پلاگین را خودکار آپدیت می‌کند. برای آپدیت دستی از بنر بالای صفحه استفاده کنید.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- hidden fields برای بخش‌های دیگر تا در همان فرم باشند -->
@@ -717,6 +809,7 @@ class DPU_Admin {
                     <input type="hidden" name="dpu_manual_percent" value="<?php echo esc_attr($opts['manual_percent']); ?>" />
                     <input type="hidden" name="dpu_limit_categories" value="<?php echo esc_attr($opts['limit_categories']); ?>" />
                     <input type="hidden" name="dpu_enable_auto_update" value="<?php echo esc_attr($opts['enable_auto_update'] ?? 1); ?>" />
+                    <input type="hidden" name="dpu_enable_plugin_auto_update" value="<?php echo esc_attr($opts['enable_plugin_auto_update'] ?? 0); ?>" />
                     <input type="hidden" name="dpu_enable_log" value="<?php echo esc_attr($opts['enable_log']); ?>" />
                     <input type="hidden" name="dpu_cache_ttl" value="<?php echo esc_attr($opts['cache_ttl']); ?>" />
                     <input type="hidden" name="dpu_round_to" value="<?php echo esc_attr($opts['round_to'] ?? 1000000); ?>" />
@@ -797,6 +890,7 @@ class DPU_Admin {
                     <input type="hidden" name="dpu_manual_percent" value="<?php echo esc_attr($opts['manual_percent']); ?>" />
                     <input type="hidden" name="dpu_limit_categories" value="<?php echo esc_attr($opts['limit_categories']); ?>" />
                     <input type="hidden" name="dpu_enable_auto_update" value="<?php echo esc_attr($opts['enable_auto_update'] ?? 1); ?>" />
+                    <input type="hidden" name="dpu_enable_plugin_auto_update" value="<?php echo esc_attr($opts['enable_plugin_auto_update'] ?? 0); ?>" />
                     <input type="hidden" name="dpu_enable_log" value="<?php echo esc_attr($opts['enable_log']); ?>" />
                     <input type="hidden" name="dpu_cache_ttl" value="<?php echo esc_attr($opts['cache_ttl']); ?>" />
                     <input type="hidden" name="dpu_round_to" value="<?php echo esc_attr($opts['round_to'] ?? 1000000); ?>" />
@@ -1106,6 +1200,72 @@ class DPU_Admin {
                     }).finally(function(){
                         setFormBusy(form, false);
                     });
+                });
+            });
+        })();
+
+        // ---- بررسی بروزرسانی از GitHub ----
+        (function(){
+            var form = document.querySelector('.dpu-check-update-form');
+            if (!form) return;
+
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+                var btn = form.querySelector('button');
+                if (btn) btn.disabled = true;
+
+                var fd = new FormData(form);
+                var url = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>?action=dpu_check_update';
+
+                fetch(url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    body: fd
+                }).then(function(res){
+                    return res.text().then(function(text){
+                        if (text.charAt(0) !== '{') throw new Error('پاسخ سرور نامعتبر');
+                        return JSON.parse(text);
+                    });
+                }).then(function(json){
+                    var wrap = document.querySelector('.dpu-wrap');
+                    if (!wrap) return;
+
+                    var n = document.createElement('div');
+                    n.className = 'dpu-notice dpu-notice-' + (json.success ? 'success' : 'error');
+                    n.textContent = json.success ? (json.data && json.data.message ? json.data.message : 'بررسی انجام شد') : (json.data && json.data.message ? json.data.message : 'خطا');
+                    wrap.insertBefore(n, wrap.children[1] || wrap.firstChild);
+
+                    if (json.success && json.data) {
+                        var banner = document.getElementById('dpu-update-banner');
+                        if (banner) {
+                            var info = banner.querySelector('.dpu-update-info');
+                            var actions = banner.querySelector('.dpu-update-actions');
+                            if (json.data.has_update) {
+                                banner.className = 'dpu-update-banner has-update';
+                                info.innerHTML = '<strong>🆕 نسخه جدید موجود است!</strong> نسخه فعلی: <code>' + json.data.current + '</code> — آخرین نسخه: <code>' + json.data.latest + '</code>';
+                                if (!actions.querySelector('.dpu-btn-warning')) {
+                                    var updateUrl = '<?php echo esc_js(wp_nonce_url(self_admin_url('update.php?action=upgrade-plugin&plugin=' . urlencode(DPU_PLUGIN_BASENAME)), 'upgrade-plugin_' . DPU_PLUGIN_BASENAME)); ?>';
+                                    var link = document.createElement('a');
+                                    link.href = updateUrl;
+                                    link.className = 'dpu-btn dpu-btn-warning';
+                                    link.textContent = '⬆️ هم‌اکنون بروزرسانی کنید';
+                                    actions.insertBefore(link, actions.firstChild);
+                                }
+                            } else {
+                                banner.className = 'dpu-update-banner up-to-date';
+                                info.innerHTML = '<strong>✅ پلاگین به‌روز است</strong> نسخه فعلی: <code>' + json.data.current + '</code>';
+                                var oldBtn = actions.querySelector('.dpu-btn-warning');
+                                if (oldBtn) oldBtn.remove();
+                            }
+                        }
+                    }
+
+                    setTimeout(function(){ if (n.parentNode) n.parentNode.removeChild(n); }, 8000);
+                }).catch(function(err){
+                    alert('خطا: ' + (err.message || err));
+                }).finally(function(){
+                    if (btn) btn.disabled = false;
                 });
             });
         })();

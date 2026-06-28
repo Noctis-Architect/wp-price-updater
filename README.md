@@ -4,7 +4,7 @@
 
 > A WordPress plugin that automatically updates WooCommerce product prices based on the USD exchange rate — with smart rounding, Telegram alerts, daily snapshots, and rollback.
 
-**نسخه / Version:** 3.0.1  
+**نسخه / Version:** 3.0.2  
 **نویسنده / Author:** mr-noctis  
 **نیازمندی‌ها / Requires:** WordPress + WooCommerce + PHP (cURL)
 
@@ -77,6 +77,7 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 | فیلتر دسته‌بندی | محدود کردن آپدیت به دسته‌های خاص |
 | پردازش batch | جلوگیری از timeout در فروشگاه‌های بزرگ |
 | نوار ادمین | نمایش قیمت لحظه‌ای دلار در admin bar |
+| بروزرسانی از GitHub | بررسی Releases و آپدیت یک‌کلیکی از پنل ادمین |
 
 ---
 
@@ -94,6 +95,7 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 | Category filter | Limit updates to selected product categories |
 | Batch processing | Avoid timeouts on large catalogs |
 | Admin bar | Live USD rate in the WordPress admin bar |
+| GitHub self-update | Check Releases and one-click update from the admin panel |
 
 ---
 
@@ -116,6 +118,8 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 6. یک بار **اجرای دستی** بزنید تا متادیتای محصولات ساخته شود.
 
 > **ساختار zip:** فایل Release بدون پوشهٔ اضافه است — مستقیماً `dollar-price-updater.php`، `admin/` و `includes/` داخل zip قرار دارند و برای نصب از پنل وردپرس آماده‌اند.
+
+> **مهم:** فقط **`dollar-price-updater.zip`** را دانلود کنید. فایل **Source code (zip)** که GitHub خودکار می‌سازد یک پوشهٔ اضافه (`wp-price-updater-…/`) دارد و برای نصب مستقیم از پنل وردپرس مناسب نیست.
 
 > **نصب دستی:** اگر ترجیح می‌دهید، zip را در `wp-content/plugins/dollar-price-updater/` extract کنید (یک پوشه بسازید و محتوای zip را داخل آن بریزید).
 
@@ -143,6 +147,8 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 
 > **Zip layout:** Release archives have no extra wrapper folder — `dollar-price-updater.php`, `admin/`, and `includes/` sit at the zip root and are ready for WordPress upload.
 
+> **Important:** Download **`dollar-price-updater.zip` only**. GitHub's auto-generated **Source code (zip)** includes a wrapper folder (`wp-price-updater-…/`) and is not suitable for direct WordPress upload.
+
 > **Manual install:** Alternatively, create `wp-content/plugins/dollar-price-updater/` and extract the zip contents there.
 
 > **Note:** On the first run for existing products, the plugin only saves `_dpu_base_price` and `_dpu_upload_dollar` without changing prices. From the second run onward, prices update based on USD changes.
@@ -157,6 +163,8 @@ If your WooCommerce store prices products based on the USD rate, every time the 
 2. آخرین نسخه را باز کنید.
 3. `dollar-price-updater.zip` را دانلود و از **افزونه‌ها → افزودن → بارگذاری افزونه** نصب کنید.
 
+> **توجه:** از فایل **Source code (zip)** استفاده نکنید — فقط asset با نام `dollar-price-updater.zip` flat است و مستقیم نصب می‌شود.
+
 ---
 
 ## Download from Releases
@@ -166,6 +174,8 @@ Each new version is published with a tag (e.g. `v3.0.0`). GitHub Actions builds 
 1. Open [Releases](https://github.com/Noctis-Architect/wp-price-updater/releases).
 2. Pick the latest version.
 3. Download `dollar-price-updater.zip` and install it via **Plugins → Add New → Upload Plugin**.
+
+> **Note:** Do not use **Source code (zip)** — only the `dollar-price-updater.zip` asset is flat and ready for WordPress upload.
 
 ---
 
@@ -306,10 +316,17 @@ Final prices are rounded **down** (`floor`) using configurable ranges (see table
 
 مسیر: **WooCommerce → Dollar Updater**
 
+بالای صفحه یک **بنر بروزرسانی** نمایش داده می‌شود:
+- نسخه فعلی و آخرین نسخه GitHub Releases
+- دکمه **«هم‌اکنون بروزرسانی کنید»** وقتی نسخه جدید موجود باشد
+- دکمه **«بررسی بروزرسانی»** برای چک دستی از GitHub
+
+در تب **تنظیمات** می‌توانید **«بروزرسانی خودکار افزونه»** را فعال کنید تا وردپرس نسخه‌های جدید را خودکار نصب کند.
+
 | تب | کاربرد |
 |----|--------|
 | 📊 داشبورد | وضعیت دلار، snapshot، زمان‌بندی، اجرای دستی |
-| ⚙️ تنظیمات | API، زمان‌بندی، Ratio، دسته‌بندی، کش |
+| ⚙️ تنظیمات | API، زمان‌بندی، Ratio، دسته‌بندی، کش، بروزرسانی خودکار افزونه |
 | 📱 تلگرام | حالت Worker یا Direct، تنظیمات ارسال |
 | 🎯 رند کردن | فعال/غیرفعال و جدول بازه‌های رند |
 | 🔧 تنظیم قیمت | افزایش/کاهش درصدی مستقل |
@@ -327,6 +344,7 @@ Final prices are rounded **down** (`floor`) using configurable ranges (see table
 | Ratio | 0.5 | سهم تغییر دلار در قیمت (۰ تا ۱) |
 | Manual Percent | 0 | درصد اضافه در اجرای دستی |
 | Limit Categories | — | ID دسته‌ها (جداشده با کاما) |
+| Plugin Auto-Update | غیرفعال | نصب خودکار نسخه‌های جدید از GitHub Releases |
 
 ---
 
@@ -334,10 +352,17 @@ Final prices are rounded **down** (`floor`) using configurable ranges (see table
 
 Path: **WooCommerce → Dollar Updater**
 
+An **update banner** at the top of the page shows:
+- Current version vs latest GitHub Release
+- **Update now** button when a newer version is available
+- **Check for updates** button for manual GitHub check
+
+In **Settings**, enable **Plugin auto-update** to let WordPress install new releases automatically.
+
 | Tab | Purpose |
 |-----|---------|
 | 📊 Dashboard | USD status, snapshots, schedule, manual run |
-| ⚙️ Settings | API, schedule, ratio, categories, cache |
+| ⚙️ Settings | API, schedule, ratio, categories, cache, plugin auto-update |
 | 📱 Telegram | Worker or Direct mode settings |
 | 🎯 Rounding | Enable/disable and configure rounding ranges |
 | 🔧 Price Adjust | Percentage increase/decrease (independent) |
@@ -475,10 +500,12 @@ After rollback, `_dpu_base_price` and `_dpu_upload_dollar` are reset to snapshot
 ```
 price-updater/
 ├── dollar-price-updater.php    # نقطه ورود پلاگین
+├── uninstall.php               # پاک‌سازی هنگام حذف پلاگین
 ├── includes/
 │   ├── class-options.php       # تنظیمات و مقادیر پیش‌فرض
 │   ├── class-api.php           # دریافت قیمت دلار (API + cache)
 │   ├── class-updater.php       # موتور اصلی به‌روزرسانی قیمت
+│   ├── class-updater-github.php # بروزرسانی از GitHub Releases
 │   ├── class-scheduler.php     # زمان‌بندی WP-Cron
 │   ├── class-logger.php        # لاگ + snapshot
 │   ├── class-rollback.php      # بازیابی قیمت‌ها
@@ -495,10 +522,12 @@ price-updater/
 ```
 price-updater/
 ├── dollar-price-updater.php    # Plugin bootstrap
+├── uninstall.php               # Cleanup on plugin deletion
 ├── includes/
 │   ├── class-options.php       # Settings & defaults
 │   ├── class-api.php           # USD price fetch (API + cache)
 │   ├── class-updater.php       # Core price update engine
+│   ├── class-updater-github.php # GitHub Releases self-updater
 │   ├── class-scheduler.php     # WP-Cron scheduling
 │   ├── class-logger.php        # Logging + snapshots
 │   ├── class-rollback.php      # Price restore
