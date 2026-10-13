@@ -73,6 +73,7 @@ class DPU_Admin {
         }
 
         $new = [
+            'api_provider'         => sanitize_text_field($_POST['dpu_api_provider'] ?? $opts['api_provider'] ?? 'wphub'),
             'api_key'              => sanitize_text_field($_POST['dpu_api_key'] ?? $opts['api_key'] ?? ''),
             'api_url'              => esc_url_raw($_POST['dpu_api_url'] ?? $opts['api_url'] ?? ''),
             'update_times'         => sanitize_text_field($_POST['dpu_update_times'] ?? $opts['update_times'] ?? ''),
@@ -623,24 +624,42 @@ class DPU_Admin {
                     <?php wp_nonce_field('dpu_save_settings_nonce'); ?>
 
                     <div class="dpu-card">
-                        <h2>🔌 تنظیمات API</h2>
+                        <h2>🔌 تنظیمات منبع قیمت دلار (API)</h2>
                         <div class="form-row">
-                            <label>API URL</label>
+                            <label>منبع استعلام قیمت</label>
                             <div class="field-wrap">
-                                <input type="text" name="dpu_api_url" value="<?php echo esc_attr($opts['api_url']); ?>" />
+                                <select name="dpu_api_provider" id="dpu_api_provider" style="max-width:380px" onchange="dpuToggleProvider(this.value)">
+                                    <option value="wphub" <?php selected($opts['api_provider'] ?? 'wphub', 'wphub'); ?>>🚀 سرور اختصاصی WP-Hub (پیش‌فرض هوشمند)</option>
+                                    <option value="custom" <?php selected($opts['api_provider'] ?? 'wphub', 'custom'); ?>>⚙️ API سفارشی / دلخواه (Custom)</option>
+                                </select>
+                                <div class="desc" id="dpu_provider_desc">
+                                    <?php if (($opts['api_provider'] ?? 'wphub') === 'wphub'): ?>
+                                        ✅ <strong>سرور پرسرعت WP-Hub فعال است:</strong> کش ابری ۳۰ دقیقه‌ای، مکانیزم چندمنبعی با ۵ منبع پشتیبان خودکار (بن‌بست، TGJU، تترلند، رمزینکس، والکس) و نرخ پایدار بدون قطعی.
+                                    <?php else: ?>
+                                        امکان اتصال به وب‌سرویس اختصاصی یا هر API مالی دیگر با آدرس و کلید دلخواه.
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" id="row_api_url">
+                            <label>API URL</label>
+                            <div class="field-wrap">
+                                <input type="text" name="dpu_api_url" id="dpu_api_url" value="<?php echo esc_attr($opts['api_url']); ?>" placeholder="https://api.wp-hub.org/api/v1/usd" />
+                                <div class="desc">آدرس وب‌سرویس دریافت نرخ دلار</div>
+                            </div>
+                        </div>
+                        <div class="form-row" id="row_api_key">
                             <label>API Key</label>
                             <div class="field-wrap">
-                                <input type="text" name="dpu_api_key" value="<?php echo esc_attr($opts['api_key']); ?>" />
+                                <input type="text" name="dpu_api_key" id="dpu_api_key" value="<?php echo esc_attr($opts['api_key']); ?>" placeholder="کلید احراز هویت" />
+                                <div class="desc">کلید دسترسی اختصاصی وب‌سرویس</div>
                             </div>
                         </div>
                         <div class="form-row">
                             <label>کش API (ثانیه)</label>
                             <div class="field-wrap">
                                 <input type="number" name="dpu_cache_ttl" value="<?php echo esc_attr($opts['cache_ttl']); ?>" style="max-width:160px" />
-                                <div class="desc">۳۶۰۰ = یک ساعت</div>
+                                <div class="desc">۱۸۰۰ = ۳۰ دقیقه (پیش‌فرض هوشمند)</div>
                             </div>
                         </div>
                     </div>
@@ -802,6 +821,7 @@ class DPU_Admin {
                         <input type="hidden" name="round_ranges[<?php echo $idx; ?>][max]" value="<?php echo esc_attr($rr['max']); ?>" />
                         <input type="hidden" name="round_ranges[<?php echo $idx; ?>][round]" value="<?php echo esc_attr($rr['round']); ?>" />
                     <?php endforeach; ?>
+                    <input type="hidden" name="dpu_api_provider" value="<?php echo esc_attr($opts['api_provider'] ?? 'wphub'); ?>" />
                     <input type="hidden" name="dpu_api_key" value="<?php echo esc_attr($opts['api_key']); ?>" />
                     <input type="hidden" name="dpu_api_url" value="<?php echo esc_attr($opts['api_url']); ?>" />
                     <input type="hidden" name="dpu_update_times" value="<?php echo esc_attr($opts['update_times']); ?>" />
@@ -883,6 +903,7 @@ class DPU_Admin {
                     <input type="hidden" name="dpu_telegram_chat_id" value="<?php echo esc_attr($opts['telegram_chat_id']); ?>" />
                     <input type="hidden" name="dpu_telegram_bot_token" value="<?php echo esc_attr($opts['telegram_bot_token']); ?>" />
                     <input type="hidden" name="dpu_telegram_direct_chat_id" value="<?php echo esc_attr($opts['telegram_direct_chat_id']); ?>" />
+                    <input type="hidden" name="dpu_api_provider" value="<?php echo esc_attr($opts['api_provider'] ?? 'wphub'); ?>" />
                     <input type="hidden" name="dpu_api_key" value="<?php echo esc_attr($opts['api_key']); ?>" />
                     <input type="hidden" name="dpu_api_url" value="<?php echo esc_attr($opts['api_url']); ?>" />
                     <input type="hidden" name="dpu_update_times" value="<?php echo esc_attr($opts['update_times']); ?>" />
@@ -1269,6 +1290,27 @@ class DPU_Admin {
                 });
             });
         })();
+
+        window.dpuToggleProvider = function(val) {
+            var urlInput = document.getElementById('dpu_api_url');
+            var keyInput = document.getElementById('dpu_api_key');
+            var descEl = document.getElementById('dpu_provider_desc');
+            if (val === 'wphub') {
+                if (urlInput && (!urlInput.value || urlInput.value.indexOf('brsapi.ir') !== -1)) {
+                    urlInput.value = 'https://api.wp-hub.org/api/v1/usd';
+                }
+                if (keyInput && !keyInput.value) {
+                    keyInput.value = 'wphub_0935ce87e51d0a0511ce3393037fd1cb';
+                }
+                if (descEl) {
+                    descEl.innerHTML = '✅ <strong>سرور پرسرعت WP-Hub فعال است:</strong> کش ابری ۳۰ دقیقه‌ای، مکانیزم چندمنبعی با ۵ منبع پشتیبان خودکار (بن‌بست، TGJU، تترلند، رمزینکس، والکس) و نرخ پایدار بدون قطعی.';
+                }
+            } else {
+                if (descEl) {
+                    descEl.innerHTML = 'امکان اتصال به وب‌سرویس اختصاصی یا هر API مالی دیگر با آدرس و کلید دلخواه.';
+                }
+            }
+        };
         </script>
         <?php
     }

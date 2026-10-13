@@ -4,7 +4,7 @@
 
 > A WordPress plugin that automatically updates WooCommerce product prices based on the USD exchange rate — with smart rounding, Telegram alerts, daily snapshots, and rollback.
 
-**نسخه / Version:** 3.0.2  
+**نسخه / Version:** 3.1.0  
 **نویسنده / Author:** mr-noctis  
 **نیازمندی‌ها / Requires:** WordPress + WooCommerce + PHP (cURL)
 
@@ -337,9 +337,10 @@ Final prices are rounded **down** (`floor`) using configurable ranges (see table
 
 | تنظیم | پیش‌فرض | توضیح |
 |-------|---------|--------|
-| API URL | `brsapi.ir/Api/Market/Gold_Currency.php` | آدرس API قیمت ارز |
-| API Key | — | کلید دریافت از brsapi.ir |
-| Cache TTL | 3600 ثانیه | مدت کش قیمت دلار |
+| API Provider | `wphub` | منبع استعلام: سرور اختصاصی WP-Hub (پیش‌فرض هوشمند) یا سفارشی (Custom) |
+| API URL | `https://api.wp-hub.org/api/v1/usd` | آدرس API قیمت ارز (با ۵ منبع پشتیبان و کش خودکار) |
+| API Key | `wphub_0935ce87e5...` | کلید دسترسی وب‌سرویس |
+| Cache TTL | 1800 ثانیه (۳۰ دقیقه) | مدت کش قیمت دلار در دیتابیس وردپرس |
 | Update Times | `00:00` | ساعت‌های اجرا (جداشده با کاما، timezone تهران) |
 | Ratio | 0.5 | سهم تغییر دلار در قیمت (۰ تا ۱) |
 | Manual Percent | 0 | درصد اضافه در اجرای دستی |

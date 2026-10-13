@@ -2,7 +2,7 @@
 /*
 Plugin Name: Price Updater PRO
 Description: به‌روز‌رسانی هوشمند قیمت محصولات ووکامرس با سیستم رند کردن پیشرفته، اعلان‌های تلگرام، snapshot روزانه و قابلیت rollback
-Version: 3.0.2
+Version: 3.1.0
 Author: mr-noctis
 Text Domain: dollar-price-updater
 Domain Path: /languages
@@ -10,7 +10,7 @@ Domain Path: /languages
 
 if (! defined('ABSPATH')) exit;
 
-define('DPU_VERSION',        '3.0.2');
+define('DPU_VERSION',        '3.1.0');
 define('DPU_PLUGIN_FILE',    __FILE__);
 define('DPU_PLUGIN_BASENAME', plugin_basename(__FILE__));
 define('DPU_PLUGIN_DIR',     plugin_dir_path(__FILE__));

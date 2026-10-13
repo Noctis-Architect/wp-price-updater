@@ -6,9 +6,10 @@ class DPU_Options {
     public static function defaults(): array {
         return [
             // API
-            'api_key'        => '',
-            'api_url'        => 'https://brsapi.ir/Api/Market/Gold_Currency.php',
-            'cache_ttl'      => 3600,
+            'api_provider'   => 'wphub',
+            'api_key'        => 'wphub_0935ce87e51d0a0511ce3393037fd1cb',
+            'api_url'        => 'https://api.wp-hub.org/api/v1/usd',
+            'cache_ttl'      => 1800,
 
             // زمان‌بندی
             'enable_auto_update' => 1,
@@ -48,7 +49,19 @@ class DPU_Options {
     }
 
     public static function get(): array {
-        return wp_parse_args(get_option('dpu_options', []), self::defaults());
+        $opts = wp_parse_args(get_option('dpu_options', []), self::defaults());
+        if (empty($opts['api_provider'])) {
+            $opts['api_provider'] = 'wphub';
+        }
+        if ($opts['api_provider'] === 'wphub') {
+            if (empty($opts['api_url']) || $opts['api_url'] === 'https://brsapi.ir/Api/Market/Gold_Currency.php') {
+                $opts['api_url'] = 'https://api.wp-hub.org/api/v1/usd';
+            }
+            if (empty($opts['api_key'])) {
+                $opts['api_key'] = 'wphub_0935ce87e51d0a0511ce3393037fd1cb';
+            }
+        }
+        return $opts;
     }
 
     public static function set(array $opts): void {
